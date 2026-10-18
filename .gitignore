@@ -1,0 +1,15 @@
+target/
+.idea/
+*.iml
+.vscode/
+logs/
+*.log
+# never commit real secrets or certificates
+credentials*.properties
+!docs/credentials.example.properties
+*.p12
+*.jks
+*.key
+*.crt
+*.csr
+*.srl

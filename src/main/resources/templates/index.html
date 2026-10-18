@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Migraitor</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<div class="layout">
+    <aside class="sidebar">
+        <div class="brand"><span class="brand-mark">M</span><span>Migraitor</span></div>
+        <nav id="nav">
+            <a href="#home" data-tab="home">Home</a>
+            <a href="#connections" data-tab="connections">Connections</a>
+            <a href="#import" data-tab="import">Import</a>
+            <a href="#launch" data-tab="launch">Launch job</a>
+            <a href="#jobs" data-tab="jobs">Jobs</a>
+            <a href="#schedule" data-tab="schedule">Scheduler</a>
+            <a href="#categories" data-tab="categories">Categories</a>
+        </nav>
+        <div class="sidebar-foot">
+            <span class="muted" th:text="${user}">user</span>
+            <form method="post" th:action="@{/logout}"><button class="link" type="submit">Sign out</button></form>
+        </div>
+    </aside>
+
+    <main class="content">
+        <!-- HOME -->
+        <section id="tab-home" class="tab">
+            <header class="page-head"><h1>Overview</h1><span class="muted" id="home-updated"></span></header>
+            <div class="cards" id="home-cards"></div>
+            <div class="panel">
+                <h2>Documents by status</h2>
+                <div id="home-status" class="status-bars"></div>
+            </div>
+            <div class="panel">
+                <h2>Running jobs</h2>
+                <div id="home-active"></div>
+            </div>
+        </section>
+
+        <!-- CONNECTIONS -->
+        <section id="tab-connections" class="tab" hidden>
+            <header class="page-head"><h1>Connections</h1>
+                <label class="inline">Migration type <select id="conn-type" class="type-select" data-filter="import"></select></label>
+            </header>
+            <p class="muted">Source and target Content Server for this migration type. Passwords are stored encrypted with the key from the secrets file and are never shown again. Without a connection here, the keys of the secrets file are used (same as v1).</p>
+            <div class="grid-2" id="conn-forms"></div>
+        </section>
+
+        <!-- IMPORT -->
+        <section id="tab-import" class="tab" hidden>
+            <header class="page-head"><h1>Import</h1>
+                <label class="inline">Migration type <select id="imp-type" class="type-select" data-filter="import"></select></label>
+            </header>
+            <div class="steps">
+                <div class="panel step">
+                    <h2><span class="step-n">1</span>Source documents</h2>
+                    <p class="muted">Documents to migrate, read from the source WebReport page by page, or from a CSV export.</p>
+                    <div class="row">
+                        <button class="btn btn-primary" data-import-report="SOURCE">Run WebReport</button>
+                        <label class="btn btn-ghost file-btn">Upload CSV<input type="file" accept=".csv,.txt" data-import-csv="SOURCE" hidden></label>
+                    </div>
+                </div>
+                <div class="panel step">
+                    <h2><span class="step-n">2</span>Target folders</h2>
+                    <p class="muted">Employees and their folders under <b id="imp-parent">999 Altakte</b> in the target.</p>
+                    <div class="row">
+                        <button class="btn btn-primary" data-import-report="TARGET">Run WebReport</button>
+                        <label class="btn btn-ghost file-btn">Upload CSV<input type="file" accept=".csv,.txt" data-import-csv="TARGET" hidden></label>
+                    </div>
+                </div>
+                <div class="panel step">
+                    <h2><span class="step-n">3</span>Match</h2>
+                    <p class="muted">Employee id + folder name. Matched documents are staged as PENDING.</p>
+                    <div class="form-row">
+                        <label>Source run<select id="match-source"></select></label>
+                        <label>Target run<select id="match-target"></select></label>
+                    </div>
+                    <button class="btn btn-primary" id="match-btn">Match</button>
+                    <div id="match-result"></div>
+                </div>
+            </div>
+            <div class="panel">
+                <div class="panel-head"><h2>Runs</h2><button class="btn btn-ghost btn-sm" id="imp-refresh">Refresh</button></div>
+                <div id="imp-runs"></div>
+            </div>
+            <div class="panel" id="unmatched-panel" hidden>
+                <div class="panel-head"><h2>Not matched · run <span id="unmatched-run"></span></h2>
+                    <a class="btn btn-ghost btn-sm" id="unmatched-csv">Download CSV</a></div>
+                <div id="unmatched"></div>
+            </div>
+        </section>
+
+        <!-- LAUNCH -->
+        <section id="tab-launch" class="tab" hidden>
+            <header class="page-head"><h1>Launch job</h1></header>
+            <div class="panel narrow">
+                <form id="launch-form" class="form">
+                    <label>Job name<input name="name" required maxlength="200" placeholder="e.g. Deichmann wave 3"></label>
+                    <label>Migration type<select name="migType" class="type-select" required></select></label>
+                    <div class="form-row">
+                        <label>Documents<input name="numItems" type="number" min="1" max="1000000" value="100" required></label>
+                        <label>Log level
+                            <select name="logLevel">
+                                <option value="1">1 · job only</option>
+                                <option value="2">2 · every step</option>
+                                <option value="3">3 · every step + URLs</option>
+                                <option value="4">4 · errors only</option>
+                            </select>
+                        </label>
+                    </div>
+                    <label>Start <span class="muted">(empty = now; a date schedules the job)</span><input name="startAt" type="datetime-local"></label>
+                    <button class="btn btn-primary" type="submit">Start job</button>
+                </form>
+            </div>
+        </section>
+
+        <!-- JOBS -->
+        <section id="tab-jobs" class="tab" hidden>
+            <header class="page-head"><h1>Jobs</h1>
+                <input id="jobs-q" type="search" placeholder="Search by name">
+            </header>
+            <div class="panel"><div id="jobs-table"></div><div class="pager" id="jobs-pager"></div></div>
+            <div class="panel" id="job-detail" hidden></div>
+        </section>
+
+        <!-- SCHEDULER -->
+        <section id="tab-schedule" class="tab" hidden>
+            <header class="page-head"><h1>Scheduler</h1></header>
+            <div class="panel narrow">
+                <p>The scheduler starts scheduled jobs when their start date has passed. It checks every few minutes.</p>
+                <div class="row"><span>Status:</span> <span id="sched-status" class="badge">…</span>
+                    <button class="btn btn-primary" id="sched-on">Start</button>
+                    <button class="btn btn-ghost" id="sched-off">Stop</button></div>
+            </div>
+            <div class="panel"><h2>Scheduled jobs</h2><div id="sched-jobs"></div></div>
+        </section>
+
+        <!-- CATEGORIES -->
+        <section id="tab-categories" class="tab" hidden>
+            <header class="page-head"><h1>Category tools</h1></header>
+            <div class="grid-2">
+                <div class="panel">
+                    <h2>1 · Parse metadata export</h2>
+                    <p class="muted">Raw export <code>DataID;{cat,ver}…'ID'=2,'Values'={'x'}</code> to <code>DataID; "cat_id": "…"; "cat_attr": "value";</code></p>
+                    <form id="cat-parse" class="form">
+                        <label>Raw export<input type="file" name="file" required></label>
+                        <button class="btn btn-primary" type="submit">Parse and download</button>
+                    </form>
+                </div>
+                <div class="panel">
+                    <h2>2 · Map categories</h2>
+                    <p class="muted">Replaces old category and attribute ids with a mapping file <code>OldValue;NewValue</code>.</p>
+                    <form id="cat-map" class="form">
+                        <label>Mapping file<input type="file" name="mapping" required></label>
+                        <label>Parsed metadata<input type="file" name="file" required></label>
+                        <button class="btn btn-primary" type="submit">Map and download</button>
+                    </form>
+                </div>
+            </div>
+        </section>
+    </main>
+</div>
+<div id="toasts" aria-live="polite"></div>
+<script th:src="@{/js/app.js}"></script>
+</body>
+</html>
