@@ -7,7 +7,7 @@ Herramienta de migración documental con orígenes y destinos enchufables. Hoy t
 | `CStoCS` | Content Server on‑premise (REST v1) | Content Server cloud (REST v2) | Deichmann |
 | `SAPALNoDep` | SAP HCM ArchiveLink (RFC `ZRfcMigrationOt` vía SOAP) | Content Server cloud | Viega |
 
-Cada tipo de migración es un módulo que implementa `MigrationType`. El destino va detrás de `TargetSystem` y por ahora solo existe el conector de Content Server. Para añadir un tipo o un destino nuevo, sigue [docs/NUEVO-TIPO.md](docs/NUEVO-TIPO.md). El diseño completo está en [docs/ARQUITECTURA.md](docs/ARQUITECTURA.md).
+Cada tipo de migración es un módulo que implementa `MigrationType`. El destino va detrás de `TargetSystem` y por ahora solo existe el conector de Content Server. Para añadir un tipo o un destino nuevo, sigue [docs/NUEVO-TIPO.md](docs/NUEVO-TIPO.md). El diseño completo está en [docs/ARQUITECTURA.md](docs/ARQUITECTURA.md) y la instalación paso a paso en [docs/INSTALACION.md](docs/INSTALACION.md).
 
 ## Requisitos
 
